@@ -167,6 +167,7 @@ GPU = {
           GPU._linemode = 0;
           if(GPU._lcdon)
           {
+            // if background rending is on
             if(GPU._bgon)
             {
               var linebase = GPU._curscan;
@@ -179,38 +180,42 @@ GPU = {
 
               if(GPU._bgtilebase)
               {
-	        var tile = GPU._vram[mapbase+t];
-		if(tile<128) tile=256+tile;
-                var tilerow = GPU._tilemap[tile][y];
-                do
-                {
-		  GPU._scanrow[160-x] = tilerow[x];
-                  GPU._scrn.data[linebase+3] = GPU._palette.bg[tilerow[x]];
-                  x++;
-                  if(x==8) { t=(t+1)&31; x=0; tile=GPU._vram[mapbase+t]; if(tile<128) tile=256+tile; tilerow = GPU._tilemap[tile][y]; }
-                  linebase+=4;
-                } while(--w);
+	               var tile = GPU._vram[mapbase+t];
+		             if(tile<128) tile=256+tile;
+                 var tilerow = GPU._tilemap[tile][y];
+                 do
+                  {
+  		              GPU._scanrow[160-x] = tilerow[x];
+                    GPU._scrn.data[linebase+3] = GPU._palette.bg[tilerow[x]];
+                    x++;
+                    if(x==8) { t=(t+1)&31; x=0; tile=GPU._vram[mapbase+t]; if(tile<128) tile=256+tile; tilerow = GPU._tilemap[tile][y]; }
+                    linebase+=4;
+                  } while(--w);
               }
               else
               {
                 var tilerow=GPU._tilemap[GPU._vram[mapbase+t]][y];
                 do
                 {
-		  GPU._scanrow[160-x] = tilerow[x];
+		              GPU._scanrow[160-x] = tilerow[x];
                   GPU._scrn.data[linebase+3] = GPU._palette.bg[tilerow[x]];
                   x++;
                   if(x==8) { t=(t+1)&31; x=0; tilerow=GPU._tilemap[GPU._vram[mapbase+t]][y]; }
                   linebase+=4;
                 } while(--w);
-	      }
+	            }
             }
+
+            //if sprite rending is on
             if(GPU._objon)
             {
               var cnt = 0;
+
               if(GPU._objsize)
               {
                 for(var i=0; i<40; i++)
                 {
+                  //Do Nothing
                 }
               }
               else
@@ -221,20 +226,29 @@ GPU = {
                 var pixel;
                 var x;
                 var linebase = GPU._curscan;
+
+                //loop through all spires
                 for(var i=0; i<40; i++)
                 {
                   obj = GPU._objdatasorted[i];
                   if(obj.y <= GPU._curline && (obj.y+8) > GPU._curline)
                   {
+                    //if yflip
                     if(obj.yflip)
+                      //flip spire
                       tilerow = GPU._tilemap[obj.tile][7-(GPU._curline-obj.y)];
                     else
+                      //don't flip spire
                       tilerow = GPU._tilemap[obj.tile][GPU._curline-obj.y];
 
+                    //set to object or background pallet
                     if(obj.palette) pal=GPU._palette.obj1;
                     else pal=GPU._palette.obj0;
 
+                    //get current line offset
                     linebase = (GPU._curline*160+obj.x)*4;
+
+                    //if xflip
                     if(obj.xflip)
                     {
                       for(x=0; x<8; x++)
@@ -243,6 +257,7 @@ GPU = {
                         {
                           if(tilerow[7-x] && (obj.prio || !GPU._scanrow[x]))
                           {
+                            //reverse pixels
                             GPU._scrn.data[linebase+3] = pal[tilerow[7-x]];
                           }
                         }
@@ -251,12 +266,15 @@ GPU = {
                     }
                     else
                     {
+                      //8 pixels in a line
                       for(x=0; x<8; x++)
                       {
+                        //if on screen
                         if(obj.x+x >=0 && obj.x+x < 160)
                         {
                           if(tilerow[x] && (obj.prio || !GPU._scanrow[x]))
                           {
+                            //render normally
                             GPU._scrn.data[linebase+3] = pal[tilerow[x]];
                           }
                         }
@@ -287,6 +305,7 @@ GPU = {
     }
   },
 
+  //Object Attribute Memory
   updateoam: function(addr,val) {
     addr-=0xFE00;
     var obj=addr>>2;
@@ -294,12 +313,19 @@ GPU = {
     {
       switch(addr&3)
       {
+        // Y-coordinate
         case 0: GPU._objdata[obj].y=val-16; break;
+
+        // X-coordinate
         case 1: GPU._objdata[obj].x=val-8; break;
+
+        // Data tile
         case 2:
           if(GPU._objsize) GPU._objdata[obj].tile = (val&0xFE);
           else GPU._objdata[obj].tile = val;
           break;
+
+        // Options          
         case 3:
           GPU._objdata[obj].palette = (val&0x10)?1:0;
           GPU._objdata[obj].xflip = (val&0x20)?1:0;
@@ -309,10 +335,10 @@ GPU = {
      }
     }
     GPU._objdatasorted = GPU._objdata;
-    GPU._objdatasorted.sort(function(a,b){
-      if(a.x>b.x) return -1;
-      if(a.num>b.num) return -1;
-    });
+    // GPU._objdatasorted.sort(function(a,b){
+    //   if(a.x>b.x) return -1;
+    //   if(a.num>b.num) return -1;
+    // });
   },
 
   rb: function(addr) {
