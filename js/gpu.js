@@ -8,6 +8,13 @@ GPU = {
   _palette: {'bg':[], 'obj0':[], 'obj1':[]},
   _scanrow: [],
 
+  _colors: {
+    white: [255, 255, 255, 255],
+    lgray: [192, 192, 192, 255],
+    dgray: [96, 96, 96, 255],
+    black: [0, 0, 0, 255]
+  },
+
   _curline: 0,
   _curscan: 0,
   _linemode: 0,
@@ -37,9 +44,9 @@ GPU = {
       GPU._oam[i] = 0;
     }
     for(i=0; i<4; i++) {
-      GPU._palette.bg[i] = 255;
-      GPU._palette.obj0[i] = 255;
-      GPU._palette.obj1[i] = 255;
+      GPU._palette.bg[i] = GPU._colors.white;
+      GPU._palette.obj0[i] = GPU._colors.white;
+      GPU._palette.obj1[i] = GPU._colors.white;
     }
     for(i=0;i<512;i++)
     {
@@ -129,7 +136,7 @@ GPU = {
             GPU._linemode = 2;
           }
           GPU._curline++;
-	  GPU._curscan += 640;
+	        GPU._curscan += 640;
           GPU._modeclocks=0;
         }
         break;
@@ -185,8 +192,12 @@ GPU = {
                  var tilerow = GPU._tilemap[tile][y];
                  do
                   {
-  		              GPU._scanrow[160-x] = tilerow[x];
-                    GPU._scrn.data[linebase+3] = GPU._palette.bg[tilerow[x]];
+                    pixel = GPU._palette.bg[tilerow[x]];
+                    GPU._scanrow[160-w] = tilerow[x];
+                    GPU._scrn.data[linebase+0] = pixel[0];
+                    GPU._scrn.data[linebase+1] = pixel[1];
+                    GPU._scrn.data[linebase+2] = pixel[2];
+                    GPU._scrn.data[linebase+3] = pixel[3];
                     x++;
                     if(x==8) { t=(t+1)&31; x=0; tile=GPU._vram[mapbase+t]; if(tile<128) tile=256+tile; tilerow = GPU._tilemap[tile][y]; }
                     linebase+=4;
@@ -197,8 +208,12 @@ GPU = {
                 var tilerow=GPU._tilemap[GPU._vram[mapbase+t]][y];
                 do
                 {
-		              GPU._scanrow[160-x] = tilerow[x];
-                  GPU._scrn.data[linebase+3] = GPU._palette.bg[tilerow[x]];
+                  pixel = GPU._palette.bg[tilerow[x]];
+                  GPU._scanrow[160-w] = tilerow[x];
+                  GPU._scrn.data[linebase+0] = pixel[0];
+                  GPU._scrn.data[linebase+1] = pixel[1];
+                  GPU._scrn.data[linebase+2] = pixel[2];
+                  GPU._scrn.data[linebase+3] = pixel[3];
                   x++;
                   if(x==8) { t=(t+1)&31; x=0; tilerow=GPU._tilemap[GPU._vram[mapbase+t]][y]; }
                   linebase+=4;
@@ -258,7 +273,11 @@ GPU = {
                           if(tilerow[7-x] && (obj.prio || !GPU._scanrow[x]))
                           {
                             //reverse pixels
-                            GPU._scrn.data[linebase+3] = pal[tilerow[7-x]];
+                            pixel = pal[tilerow[7-x]];
+                            GPU._scrn.data[linebase+0] = pixel[0];
+                            GPU._scrn.data[linebase+1] = pixel[1];
+                            GPU._scrn.data[linebase+2] = pixel[2];
+                            GPU._scrn.data[linebase+3] = pixel[3];
                           }
                         }
                         linebase+=4;
@@ -275,7 +294,11 @@ GPU = {
                           if(tilerow[x] && (obj.prio || !GPU._scanrow[x]))
                           {
                             //render normally
-                            GPU._scrn.data[linebase+3] = pal[tilerow[x]];
+                            pixel = pal[tilerow[x]];
+                            GPU._scrn.data[linebase+0] = pixel[0];
+                            GPU._scrn.data[linebase+1] = pixel[1];
+                            GPU._scrn.data[linebase+2] = pixel[2];
+                            GPU._scrn.data[linebase+3] = pixel[3];
                           }
                         }
                         linebase+=4;
@@ -415,24 +438,24 @@ GPU = {
         {
           switch((val>>(i*2))&3)
           {
-            case 0: GPU._palette.bg[i] = 255; break;
-            case 1: GPU._palette.bg[i] = 192; break;
-            case 2: GPU._palette.bg[i] = 96; break;
-            case 3: GPU._palette.bg[i] = 0; break;
+            case 0: GPU._palette.bg[i] = GPU._colors.white; break;
+            case 1: GPU._palette.bg[i] = GPU._colors.lgray; break;
+            case 2: GPU._palette.bg[i] = GPU._colors.dgray; break;
+            case 3: GPU._palette.bg[i] = GPU._colors.black; break;
           }
         }
         break;
-
+``
       // OBJ0 palette mapping
       case 8:
         for(var i=0;i<4;i++)
         {
           switch((val>>(i*2))&3)
           {
-            case 0: GPU._palette.obj0[i] = 255; break;
-            case 1: GPU._palette.obj0[i] = 192; break;
-            case 2: GPU._palette.obj0[i] = 96; break;
-            case 3: GPU._palette.obj0[i] = 0; break;
+            case 0: GPU._palette.obj0[i] = GPU._colors.white; break;
+            case 1: GPU._palette.obj0[i] = GPU._colors.lgray; break;
+            case 2: GPU._palette.obj0[i] = GPU._colors.dgray; break;
+            case 3: GPU._palette.obj0[i] = GPU._colors.black; break;
           }
         }
         break;
@@ -443,10 +466,10 @@ GPU = {
         {
           switch((val>>(i*2))&3)
           {
-            case 0: GPU._palette.obj1[i] = 255; break;
-            case 1: GPU._palette.obj1[i] = 192; break;
-            case 2: GPU._palette.obj1[i] = 96; break;
-            case 3: GPU._palette.obj1[i] = 0; break;
+            case 0: GPU._palette.obj1[i] = GPU._colors.white; break;
+            case 1: GPU._palette.obj1[i] = GPU._colors.lgray; break;
+            case 2: GPU._palette.obj1[i] = GPU._colors.dgray; break;
+            case 3: GPU._palette.obj1[i] = GPU._colors.black; break;
           }
         }
         break;
