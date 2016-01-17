@@ -183,18 +183,22 @@ GPU = {
               var linebase = GPU._curscan;
               var mapbase = GPU._bgmapbase + ((((GPU._curline+GPU._yscrl)&255)>>3)<<5);
               var y = (GPU._curline+GPU._yscrl)&7;
-              var x = GPU._xscrl&7;
+              var x = (GPU._xscrl)&7;
               var t = (GPU._xscrl>>3)&31;
               var pixel;
               var w=160;
 
               if(GPU._bgtilebase)
               {
+                 //get first tile
 	               var tile = GPU._vram[mapbase+t];
 		             if(tile<128) tile=256+tile;
                  var tilerow = GPU._tilemap[tile][y];
+
+                 //render line
                  do
                   {
+                    //render tile
                     pixel = GPU._palette.bg[tilerow[x]];
                     GPU._scanrow[160-w] = tilerow[x];
                     GPU._scrn.data[linebase+0] = pixel[0];
@@ -202,7 +206,16 @@ GPU = {
                     GPU._scrn.data[linebase+2] = pixel[2];
                     GPU._scrn.data[linebase+3] = pixel[3];
                     x++;
-                    if(x==8) { t=(t+1)&31; x=0; tile=GPU._vram[mapbase+t]; if(tile<128) tile=256+tile; tilerow = GPU._tilemap[tile][y]; }
+
+                    //next tile
+                    if(x==8) {
+                     t=(t+1)&31;
+                     x=0;
+
+                     tile=GPU._vram[mapbase+t];
+                     if(tile<128) tile=256+tile;
+                     tilerow = GPU._tilemap[tile][y]; 
+                    }
                     linebase+=4;
                   } while(--w);
               }
