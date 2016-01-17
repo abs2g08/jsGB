@@ -25,6 +25,9 @@ GPU = {
   _raster: 0,
   _ints: 0,
   
+  _winx: 0,
+  _winy: 0,
+
   _lcdon: 0,
   _bgon: 0,
   _objon: 0,
@@ -150,7 +153,7 @@ GPU = {
           if(GPU._curline > 153)
           {
             GPU._curline = 0;
-	    GPU._curscan = 0;
+	          GPU._curscan = 0;
             GPU._linemode = 2;
           }
         }
@@ -309,6 +312,10 @@ GPU = {
                 }
               }
             }
+
+            if(GPU._winon) {
+
+            }
           }
         }
         break;
@@ -370,6 +377,7 @@ GPU = {
     {
       case 0:
         return (GPU._lcdon?0x80:0)|
+               (GPU._winon?0x20:0)|        
                ((GPU._bgtilebase==0x0000)?0x10:0)|
                ((GPU._bgmapbase==0x1C00)?0x08:0)|
                (GPU._objsize?0x04:0)|
@@ -401,8 +409,10 @@ GPU = {
     GPU._reg[gaddr] = val;
     switch(gaddr)
     {
-      case 0:
+      case 0: //FF40 - LCDC
         GPU._lcdon = (val&0x80)?1:0;
+        GPU._winon = (val&0x20)?1:0;
+        //GPU._wintilebase = 
         GPU._bgtilebase = (val&0x10)?0x0000:0x0800;
         GPU._bgmapbase = (val&0x08)?0x1C00:0x1800;
         GPU._objsize = (val&0x04)?1:0;
@@ -410,11 +420,11 @@ GPU = {
         GPU._bgon = (val&0x01)?1:0;
         break;
 
-      case 2:
+      case 2: //FF42 - SCY - Scroll Y (R/W)
         GPU._yscrl = val;
         break;
 
-      case 3:
+      case 3: //FF42 - SCY - Scroll Y (R/W)
         GPU._xscrl = val;
         break;
 
@@ -432,7 +442,7 @@ GPU = {
         }
         break;
 
-      // BG palette mapping
+      // FF47 - BGP - BG Palette Data (R/W) mapping 
       case 7:
         for(var i=0;i<4;i++)
         {
@@ -445,8 +455,7 @@ GPU = {
           }
         }
         break;
-``
-      // OBJ0 palette mapping
+      // FF48 - OBP0 - Object Palette 0 Data (R/W) 
       case 8:
         for(var i=0;i<4;i++)
         {
@@ -460,7 +469,7 @@ GPU = {
         }
         break;
 
-      // OBJ1 palette mapping
+      //FF49 - OBP1 - Object Palette 1 Data (R/W) 
       case 9:
         for(var i=0;i<4;i++)
         {
@@ -472,6 +481,22 @@ GPU = {
             case 3: GPU._palette.obj1[i] = GPU._colors.black; break;
           }
         }
+        break;
+
+
+      //FF4A Name - WY - Window Y Position  (R/W)
+      case 10:
+        GPU._winy = val;
+        break;
+
+
+      //FF4B WX Contents - Window X Position (R/W)
+      case 11:
+        GPU._winx = val;
+        break;
+
+      default:
+        console.log('gaddr:'+gaddr);
         break;
     }
   }
